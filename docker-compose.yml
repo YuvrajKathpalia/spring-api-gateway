@@ -1,0 +1,67 @@
+# ============================================================
+# microgateway — full local stack
+#
+#   client → gateway(:8080) → user-service(:8081) | product-service(:8082)
+#                                     └──────────────┴──→ postgres(:5432)
+#
+# Bring everything up:   docker compose up --build
+# Tear everything down:  docker compose down -v
+# ============================================================
+services:
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      # Creates userdb + productdb on first startup
+      - ./docker/init-databases.sql:/docker-entrypoint-initdb.d/init-databases.sql:ro
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  user-service:
+    build: ./user-service
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/userdb
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      # Shared signing secret — user-service SIGNS, gateway VERIFIES. Must match.
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me-please-32-bytes-min}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  product-service:
+    build: ./product-service
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/productdb
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  gateway:
+    build: ./gateway
+    ports:
+      # The only port exposed to the host — all client traffic enters here.
+      # Host port is overridable (GATEWAY_PORT) in case 8080 is taken locally.
+      - "${GATEWAY_PORT:-8080}:8080"
+    environment:
+      # Reach the backends by their compose service names (Docker DNS).
+      UPSTREAM_USER: http://user-service:8081
+      UPSTREAM_PRODUCT: http://product-service:8082
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me-please-32-bytes-min}
+    depends_on:
+      - user-service
+      - product-service
+
+volumes:
+  pgdata:

@@ -1,0 +1,35 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: user-service
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/userdb}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+
+  jpa:
+    hibernate:
+      # Auto-create/update schema for a learning project. Use Flyway/Liquibase in production.
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+
+# Shared with the gateway (the verifier). Injected via JWT_SECRET in every environment.
+jwt:
+  secret: ${JWT_SECRET:dev-secret-change-me-please-32-bytes-min}
+  expiration: 24h
+
+# Expose only health for the demo; keep the surface small.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always

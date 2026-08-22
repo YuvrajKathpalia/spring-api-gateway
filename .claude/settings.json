@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker:*)",
+      "Bash(docker compose:*)",
+      "Bash(mvn:*)",
+      "Bash(./mvnw:*)",
+      "Bash(curl:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(java:*)",
+      "Bash(cd:*)",
+      "Bash(echo:*)",
+      "Bash(sleep:*)",
+      "Bash(jq:*)"
+    ]
+  }
+}
