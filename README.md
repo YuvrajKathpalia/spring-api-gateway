@@ -176,6 +176,12 @@ docker compose up --build
 
 This starts Postgres (with `userdb` + `productdb`), both backend services, and the gateway. Only the gateway is exposed, on `http://localhost:8080`.
 
+If port 8080 is already taken locally, override it:
+
+```bash
+GATEWAY_PORT=8090 docker compose up --build
+```
+
 Tear down (including the database volume):
 
 ```bash
@@ -210,6 +216,16 @@ curl -i -s http://localhost:8080/products
 ```
 
 Watch the `product-service` logs during step 3/4 — you'll see `Current User` / `Current Role`, proving the gateway propagated identity via headers.
+
+### Postman collection
+
+A ready-to-run collection lives at [`postman/spring-api-gateway.postman_collection.json`](postman/spring-api-gateway.postman_collection.json) — the same end-to-end flow above (register → login → protected calls → bad-token rejection → health check), with automated assertions on each response. Import it into Postman and click **Run Collection**, or run it headless with [Newman](https://github.com/postmanlabs/newman):
+
+```bash
+npx newman run postman/spring-api-gateway.postman_collection.json
+```
+
+Login automatically captures the returned JWT into a collection variable, so every later request in the run reuses it — no manual copy-pasting of tokens between requests. The collection's `baseUrl` variable defaults to `http://localhost:8080`; if you overrode `GATEWAY_PORT` above, update `baseUrl` to match before running.
 
 ### Swagger UI
 - User service: `http://localhost:8081/swagger-ui.html`
