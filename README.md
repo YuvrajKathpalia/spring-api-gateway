@@ -227,10 +227,6 @@ npx newman run postman/spring-api-gateway.postman_collection.json
 
 Login automatically captures the returned JWT into a collection variable, so every later request in the run reuses it — no manual copy-pasting of tokens between requests. The collection's `baseUrl` variable defaults to `http://localhost:8080`; if you overrode `GATEWAY_PORT` above, update `baseUrl` to match before running.
 
-### Swagger UI
-- User service: `http://localhost:8081/swagger-ui.html`
-- Product service: `http://localhost:8082/swagger-ui.html`
-
 ### Running a single service locally (without Docker)
 Each service needs Java 21 and a reachable Postgres. Start Postgres via compose, then:
 ```bash
